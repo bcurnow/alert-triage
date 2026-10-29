@@ -19,12 +19,22 @@ propose-then-approve semantics.
 
 ## Development
 
-    python3 -m venv .venv && . .venv/bin/activate
-    pip install -e '.[dev]'
-    pytest
+Everything installs into a project-local `.venv`; nothing goes on the host. On any host with
+Python 3.12 or newer and `python3-venv`:
+
+    make venv     # create .venv and install the project plus dev tooling
+    make test
+    make lint
+    make format
+
+`make help` lists the targets.
 
 ## Status
 
 Pre-implementation. The rollout plan (decisions, phases, firewall and ansible work, open
 questions) is tracked in the infra repo:
 <https://github.com/bcurnow/misc/blob/main/scripts/alert-triage/alert-triage-plan.md>
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).

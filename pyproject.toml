@@ -2,6 +2,7 @@
 name = "alert-triage"
 version = "0.0.0"
 description = "Read-only alert triage agent: Alertmanager webhook to Claude Agent SDK investigation to email"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = []
 
@@ -17,7 +18,3 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
-[tool.ruff]
-line-length = 100
-target-version = "py312"

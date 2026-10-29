@@ -1,0 +1,10 @@
+line-length = 200
+
+[format]
+quote-style = "single"
+
+[lint]
+select = ["Q"]  # Enable flake8-quotes rules
+
+[lint.flake8-quotes]
+inline-quotes = "single"
