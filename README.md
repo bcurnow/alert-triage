@@ -29,10 +29,20 @@ Python 3.12 or newer and `python3-venv`:
 
 `make help` lists the targets.
 
+## Phase 1: digest service (no LLM)
+
+`alert-triage serve --config config.toml` receives Alertmanager webhooks (see
+[docs/alertmanager-route.md](docs/alertmanager-route.md)), clusters alerts into incidents, holds
+back anything mailed recently, confirms with Alertmanager that the alerts are still firing, and
+mails a plain-text digest. Pure standard library; state is a small SQLite file.
+
+`alert-triage replay --days 30` runs the same pipeline over past Prometheus alert history to tune
+the debounce and cooldown settings before anything goes live. Copy `config.example.toml` to start.
+
 ## Status
 
-Pre-implementation. The rollout plan (decisions, phases, firewall and ansible work, open
-questions) is tracked in the infra repo:
+Phase 1 code complete and tested; not deployed. The rollout plan (decisions, phases, firewall and
+ansible work, open questions) is tracked in the infra repo:
 <https://github.com/bcurnow/misc/blob/main/scripts/alert-triage/alert-triage-plan.md>
 
 ## License

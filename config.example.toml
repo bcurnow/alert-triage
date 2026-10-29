@@ -1,0 +1,24 @@
+# alert-triage service configuration. Every key is optional except mail_to.
+
+listen_host = "127.0.0.1"
+listen_port = 9199
+alertmanager_url = "https://alertmanager.internal.curnowtopia.com:9093"
+state_path = "/var/lib/alert-triage/state.db"
+
+# Arrivals within this much quiet time are one incident; a storm that never goes quiet is released
+# after max_hold_seconds.
+debounce_seconds = 300
+max_hold_seconds = 1800
+
+# An alert (by Alertmanager fingerprint) already mailed inside this window is held back.
+cooldown_seconds = 21600
+tick_seconds = 15
+
+severities = ["critical", "warning"]
+ignore_alertnames = ["Watchdog"]
+
+mail_sender = "homelab@curnowtopia.com"
+mail_to = "you@example.com"
+mail_subject_prefix = "[triage]"
+sendmail_command = ["msmtp", "-t"]
+notify_self_resolved = false

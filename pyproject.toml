@@ -6,6 +6,9 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = []
 
+[project.scripts]
+alert-triage = "alert_triage.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
 
