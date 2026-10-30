@@ -13,7 +13,7 @@ class Config:
     # A storm that never goes quiet is still dispatched after this long.
     max_hold_seconds: int = 1800
     # An alert (by Alertmanager fingerprint) already dispatched inside this window is not re-investigated.
-    cooldown_seconds: int = 21600
+    cooldown_seconds: int = 86400
     tick_seconds: int = 15
     severities: tuple = ('critical', 'warning')
     ignore_alertnames: tuple = ('Watchdog',)
