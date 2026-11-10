@@ -78,3 +78,17 @@ def test_pending_alerts_survive_a_restart(build, tmp_path):
     assert restarted.pending() == 1
     restarted.tick(now=300)
     assert len(mailer.sent) == 1
+
+
+def test_cooldown_held_alerts_that_have_since_resolved_are_not_listed(build):
+    held, still, fresh = make_alert(target='held'), make_alert(target='still'), make_alert(target='fresh')
+    service, am, mailer, store = build(active={held.fingerprint, still.fingerprint})
+    service.ingest([held, still], now=0)
+    service.tick(now=900)
+    service.ingest([held, still], now=3600)
+    am.active = {still.fingerprint, fresh.fingerprint}
+    service.ingest([fresh], now=3600)
+    service.tick(now=3600 + 900)
+    body = mailer.sent[1][1]
+    assert 'Held back by the cooldown since the last digest (1): HostDown x1' in body
+    assert store.incidents()[1][6] == 1

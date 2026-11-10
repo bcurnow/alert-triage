@@ -1,4 +1,5 @@
 from alert_triage.clusterer import Clusterer
+from alert_triage.config import Config
 from conftest import make_alert
 
 
@@ -36,3 +37,14 @@ def test_next_arrival_after_release_starts_a_new_incident():
     second = c.due(now=700)
     assert first.id != second.id
     assert [a.target for a in second.alerts] == ['b']
+
+
+def test_default_debounce_keeps_alerts_of_one_cause_that_arrive_minutes_apart_together():
+    config = Config(mail_to='me@example.com')
+    c = Clusterer(config.debounce_seconds, config.max_hold_seconds)
+    c.add(make_alert(name='KubernetesPodNotReady', target='argocd/dex'), now=0)
+    # The service polls every tick, so the first alert must still be held at the old 5 minute mark.
+    assert c.due(now=5 * 60 + 15) is None
+    c.add(make_alert(name='ArgoCDAppUnhealthy', target='argocd/argocd'), now=13.5 * 60)
+    assert c.due(now=13.5 * 60 + 60) is None
+    assert len(c.due(now=13.5 * 60 + config.debounce_seconds).alerts) == 2

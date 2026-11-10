@@ -36,11 +36,19 @@ def test_parse_time_handles_nanoseconds_and_plain_seconds():
     assert parse_time('2026-10-28T13:45:00Z') == parse_time('2026-10-28T13:45:00.999999999Z') - 0.999999
 
 
-def test_target_prefers_instance_then_workload():
-    assert target_of({'instance': 'h:1', 'namespace': 'x'}) == 'h:1'
+def test_target_names_the_workload_for_kubernetes_alerts_and_the_host_otherwise():
+    assert target_of({'instance': 'h:1'}) == 'h:1'
+    assert target_of({'instance': '10.97.6.169:8080', 'namespace': 'argocd', 'pod': 'argocd-dex-server-abc'}) == 'argocd/argocd-dex-server-abc'
     assert target_of({'namespace': 'iam', 'pod': 'keycloak-0'}) == 'iam/keycloak-0'
+    assert target_of({'namespace': 'iam', 'statefulset': 'keycloak'}) == 'iam/keycloak'
+    assert target_of({'namespace': 'monitoring'}) == 'monitoring'
     assert target_of({'job': 'probe'}) == 'probe'
     assert target_of({}) == ''
+
+
+def test_target_prefers_the_argocd_app_over_the_exporter_pod():
+    labels = {'instance': '10.97.3.130:8082', 'namespace': 'argocd', 'pod': 'argocd-application-controller-0', 'name': 'argocd'}
+    assert target_of(labels) == 'argocd/argocd'
 
 
 def test_fingerprint_is_stable_and_label_sensitive():

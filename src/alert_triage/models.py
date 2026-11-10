@@ -13,14 +13,18 @@ def parse_time(value):
 
 
 def target_of(labels):
-    """The thing a human would call the subject of the alert."""
-    if labels.get('instance'):
-        return labels['instance']
+    """The thing a human would call the subject of the alert.
+
+    Kubernetes alerts carry a namespace; their `instance` is only the exporter's scrape endpoint (kube-state-metrics,
+    the Argo CD metrics port), so they are named by namespace and workload instead. `name` comes before `pod`
+    because on Argo CD metrics `name` is the application and `pod` is the exporter. Everything else is the host
+    (`instance`), then the job.
+    """
     namespace = labels.get('namespace', '')
-    name = next((labels[k] for k in ('pod', 'deployment', 'statefulset', 'daemonset', 'job_name', 'name') if labels.get(k)), '')
-    if namespace or name:
-        return f'{namespace}/{name}'.strip('/')
-    return labels.get('job', '')
+    if namespace:
+        workload = next((labels[k] for k in ('name', 'deployment', 'statefulset', 'daemonset', 'job_name', 'pod') if labels.get(k)), '')
+        return f'{namespace}/{workload}'.strip('/')
+    return labels.get('instance') or labels.get('job', '')
 
 
 def fingerprint_of(labels):

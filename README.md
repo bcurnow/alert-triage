@@ -41,7 +41,7 @@ the debounce and cooldown settings before anything goes live. Copy `config.examp
 
 ## Status
 
-Phase 1 code complete and tested; not deployed. The rollout plan (decisions, phases, firewall and
+Phase 1 is released (v0.1.0) and running in shadow mode on the author's monitoring host. The rollout plan (decisions, phases, firewall and
 ansible work, open questions) is tracked in the infra repo:
 <https://github.com/bcurnow/misc/blob/main/scripts/alert-triage/alert-triage-plan.md>
 

@@ -8,8 +8,10 @@ class Config:
     listen_port: int = 9199
     alertmanager_url: str = 'https://alertmanager.internal.curnowtopia.com:9093'
     state_path: str = '/var/lib/alert-triage/state.db'
-    # Alerts arriving within this much quiet time of each other are one incident.
-    debounce_seconds: int = 300
+    # Alerts arriving within this much quiet time of each other are one incident. Alerts from one cause
+    # reach Alertmanager at different times (each rule has its own `for`), seen up to about 13 minutes apart,
+    # so a shorter window splits them into separate digests.
+    debounce_seconds: int = 900
     # A storm that never goes quiet is still dispatched after this long.
     max_hold_seconds: int = 1800
     # An alert (by Alertmanager fingerprint) already dispatched inside this window is not re-investigated.

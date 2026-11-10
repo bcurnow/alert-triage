@@ -70,6 +70,9 @@ class Service:
             active, check_failed = None, True
         kept = incident.alerts if active is None else [a for a in incident.alerts if a.fingerprint in active]
         dropped = [a for a in incident.alerts if a not in kept]
+        if active is not None:
+            # Held back since an earlier digest, possibly hours ago: list only the ones still firing.
+            suppressed = [a for a in suppressed if a.fingerprint in active]
         outcome = 'self_resolved'
         if kept or self.config.notify_self_resolved:
             subject, body = digest.render(incident, kept, dropped, suppressed, self.config.mail_subject_prefix, check_failed)

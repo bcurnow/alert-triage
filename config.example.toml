@@ -6,8 +6,9 @@ alertmanager_url = "https://alertmanager.internal.curnowtopia.com:9093"
 state_path = "/var/lib/alert-triage/state.db"
 
 # Arrivals within this much quiet time are one incident; a storm that never goes quiet is released
-# after max_hold_seconds.
-debounce_seconds = 300
+# after max_hold_seconds. Related alerts can reach Alertmanager 10 minutes or more apart (each rule has
+# its own `for`), so keep this above that.
+debounce_seconds = 900
 max_hold_seconds = 1800
 
 # An alert (by Alertmanager fingerprint) already mailed inside this window is held back.
