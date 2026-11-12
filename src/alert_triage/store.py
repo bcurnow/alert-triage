@@ -6,7 +6,7 @@ from alert_triage.models import Alert
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS pending (fingerprint TEXT PRIMARY KEY, alert TEXT NOT NULL, arrived REAL NOT NULL);
-CREATE TABLE IF NOT EXISTS cooldown (fingerprint TEXT PRIMARY KEY, last_dispatched REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS cooldown (fingerprint TEXT PRIMARY KEY, last_active REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS incidents (
     id TEXT PRIMARY KEY, opened REAL NOT NULL, dispatched REAL NOT NULL, outcome TEXT NOT NULL,
     alert_count INTEGER NOT NULL, kept_count INTEGER NOT NULL, suppressed_count INTEGER NOT NULL, detail TEXT NOT NULL
@@ -15,13 +15,15 @@ CREATE TABLE IF NOT EXISTS incidents (
 
 
 class Store:
-    """Pending alerts survive a restart; cooldown and incident history persist for grading."""
+    """Pending alerts survive a restart; the cooldown (when each alert was last mailed or re-sent) and incident history persist."""
 
     def __init__(self, path):
         self._db = sqlite3.connect(path, check_same_thread=False)
         self._lock = threading.Lock()
         with self._lock, self._db:
             self._db.executescript(SCHEMA)
+            if 'last_dispatched' in [row[1] for row in self._db.execute('PRAGMA table_info(cooldown)')]:
+                self._db.execute('ALTER TABLE cooldown RENAME COLUMN last_dispatched TO last_active')
 
     def add_pending(self, alert, arrived):
         with self._lock, self._db:
@@ -38,8 +40,12 @@ class Store:
 
     def in_cooldown(self, fingerprint, now, window):
         with self._lock:
-            row = self._db.execute('SELECT last_dispatched FROM cooldown WHERE fingerprint = ?', (fingerprint,)).fetchone()
+            row = self._db.execute('SELECT last_active FROM cooldown WHERE fingerprint = ?', (fingerprint,)).fetchone()
         return row is not None and now - row[0] < window
+
+    def touch_cooldown(self, fingerprint, now):
+        with self._lock, self._db:
+            self._db.execute('UPDATE cooldown SET last_active = ? WHERE fingerprint = ?', (now, fingerprint))
 
     def mark_dispatched(self, alerts, now):
         with self._lock, self._db:

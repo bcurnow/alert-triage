@@ -42,6 +42,8 @@ class Service:
                 if alert.severity not in self.config.severities or alert.alertname in self.config.ignore_alertnames:
                     continue
                 if self.store.in_cooldown(alert.fingerprint, now, self.config.cooldown_seconds):
+                    # Sliding: Alertmanager re-sending it means it never went quiet, so it stays held back.
+                    self.store.touch_cooldown(alert.fingerprint, now)
                     self._suppressed[alert.fingerprint] = alert
                 elif self.clusterer.add(alert, now):
                     self.store.add_pending(alert, now)

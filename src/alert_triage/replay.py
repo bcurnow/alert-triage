@@ -11,6 +11,7 @@ from alert_triage.service import Service
 from alert_triage.store import Store
 
 GROUP_WAIT = 30
+REPEAT_INTERVAL = 4 * 3600
 
 
 @dataclass
@@ -77,7 +78,8 @@ def simulate(episodes, config):
     mailer = _ReplayMailer()
     store = Store(':memory:')
     service = Service(config, store, alertmanager, mailer, clock=lambda: clock[0])
-    arrivals = sorted(((e.start + GROUP_WAIT, e) for e in episodes), key=lambda x: x[0])
+    # Alertmanager re-sends a still-firing alert every repeat_interval.
+    arrivals = sorted(((when, e) for e in episodes for when in range(int(e.start) + GROUP_WAIT, int(e.end), REPEAT_INTERVAL)), key=lambda x: x[0])
 
     def advance(until):
         while service.pending():

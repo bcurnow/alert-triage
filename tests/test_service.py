@@ -29,14 +29,34 @@ def test_all_resolved_is_recorded_but_not_mailed(build):
     assert store.incidents()[0][3] == 'self_resolved'
 
 
-def test_cooldown_holds_back_a_repeat_then_expires(build):
+def test_cooldown_holds_back_a_repeat(build):
     alert = make_alert()
     service, am, mailer, store = build(active={alert.fingerprint})
     service.ingest([alert], now=0)
     service.tick(now=300)
     service.ingest([alert], now=4 * 3600)
     assert service.pending() == 0
-    service.ingest([alert], now=300 + 21600 + 1)
+
+
+def test_a_continuously_resent_alert_never_leaves_cooldown(build):
+    alert = make_alert()
+    service, am, mailer, store = build(active={alert.fingerprint})
+    service.ingest([alert], now=0)
+    service.tick(now=300)
+    for hour in range(4, 49, 4):
+        service.ingest([alert], now=hour * 3600)
+        assert service.pending() == 0
+    service.tick(now=49 * 3600)
+    assert len(mailer.sent) == 1
+
+
+def test_an_alert_quiet_for_the_whole_cooldown_gets_a_new_digest(build):
+    alert = make_alert()
+    service, am, mailer, store = build(active={alert.fingerprint})
+    service.ingest([alert], now=0)
+    service.tick(now=300)
+    service.ingest([alert], now=4 * 3600)
+    service.ingest([alert], now=4 * 3600 + 21600 + 1)
     assert service.pending() == 1
 
 

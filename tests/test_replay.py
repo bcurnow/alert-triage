@@ -23,3 +23,8 @@ def test_a_lasting_alert_is_emailed_once_even_if_it_refires_in_cooldown():
     episodes = [episode('HostDown', 'a', 0, 4000), episode('HostDown', 'a', 6000, 9000)]
     incidents, sent = simulate(episodes, Config())
     assert sent == 1
+
+
+def test_a_still_firing_alert_is_not_mailed_again_when_the_cooldown_lapses_between_repeats():
+    incidents, sent = simulate([episode('HostDown', 'a', 0, 3 * 86400)], Config())
+    assert sent == 1

@@ -28,7 +28,8 @@ Notes:
   arrives as one group per alertname). `send_resolved: true` is harmless; resolved notifications are
   ignored because whether an alert is still firing is checked against Alertmanager at dispatch.
 - Alertmanager repeats a firing group every `repeat_interval`; the service dedups repeats by
-  fingerprint, and the cooldown stops a long-running alert from producing a digest every few hours.
+  fingerprint, and the cooldown stops a long-running alert from producing a digest every few hours. Each repeat
+  restarts the cooldown, so a continuously firing alert gets one digest, not one per cooldown period.
 
 ## Trying it without touching Alertmanager
 
